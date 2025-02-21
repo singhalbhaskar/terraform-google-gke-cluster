@@ -306,7 +306,7 @@ module "workload_identity" {
 }
 
 module "kubectl_apply" {
-  source = "../../management/kubectl-apply"
+  source = "github.com/singhalbhaskar/terraform-google-kubectl-apply?ref=v0.0.1"
 
   cluster_id = google_container_cluster.gke_cluster.id
   project_id = var.project_id
