@@ -305,30 +305,31 @@ module "workload_identity" {
   ]
 }
 
-module "kubectl_apply" {
-  source = "github.com/singhalbhaskar/terraform-google-kubectl-apply?ref=v0.0.1"
-
-  cluster_id = google_container_cluster.gke_cluster.id
-  project_id = var.project_id
-
-  apply_manifests = flatten([
-    for idx, network_info in var.additional_networks : [
-      {
-        source = "${path.module}/templates/gke-network-paramset.yaml.tftpl",
-        template_vars = {
-          name            = "vpc${idx + 1}",
-          network_name    = network_info.network
-          subnetwork_name = network_info.subnetwork
-        }
-      },
-      {
-        source        = "${path.module}/templates/network-object.yaml.tftpl",
-        template_vars = { name = "vpc${idx + 1}" }
-      }
-    ]
-  ])
-  providers = {
-    kubectl = kubectl
-    http    = http
-  }
-}
+#TODO move kubectl apply out of here
+#module "kubectl_apply" {
+#  source = "github.com/singhalbhaskar/terraform-google-kubectl-apply?ref=v0.0.1"
+#
+#  cluster_id = google_container_cluster.gke_cluster.id
+#  project_id = var.project_id
+#
+#  apply_manifests = flatten([
+#    for idx, network_info in var.additional_networks : [
+#      {
+#        source = "${path.module}/templates/gke-network-paramset.yaml.tftpl",
+#        template_vars = {
+#          name            = "vpc${idx + 1}",
+#          network_name    = network_info.network
+#          subnetwork_name = network_info.subnetwork
+#        }
+#      },
+#      {
+#        source        = "${path.module}/templates/network-object.yaml.tftpl",
+#        template_vars = { name = "vpc${idx + 1}" }
+#      }
+#    ]
+#  ])
+#  providers = {
+#    kubectl = kubectl
+#    http    = http
+#  }
+#}
