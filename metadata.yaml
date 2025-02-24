@@ -24,7 +24,7 @@ spec:
     source:
       repo: https://github.com/singhalbhaskar/terraform-google-gke-cluster.git
       sourceType: git
-    version: 0.0.1
+    version: 0.0.3
     actuationTool:
       flavor: Terraform
       version: ">= 1.3"
@@ -75,10 +75,22 @@ spec:
         description: "The ID of the GCE VPC network to host the cluster given in the format: `projects/<project_id>/global/networks/<network_name>`."
         varType: string
         required: true
+        connections:
+          - source:
+              source: github.com/singhalbhaskar/terraform-google-vpc
+              version: ">= 0.0.1"
+            spec:
+              outputExpr: network_id
       - name: subnetwork_self_link
         description: The self link of the subnetwork to host the cluster in.
         varType: string
         required: true
+        connections:
+          - source:
+              source: github.com/singhalbhaskar/terraform-google-vpc
+              version: ">= 0.0.1"
+            spec:
+              outputExpr: subnetwork_self_link
       - name: pods_ip_range_name
         description: The name of the secondary subnet ip range to use for pods.
         varType: string
@@ -269,6 +281,12 @@ spec:
               }))
             }))
         defaultValue: []
+        connections:
+          - source:
+              source: github.com/singhalbhaskar/terraform-google-multivpc
+              version: ">= 0.0.1"
+            spec:
+              outputExpr: additional_networks
     outputs:
       - name: cluster_id
         description: An identifier for the resource with format projects/{{project_id}}/locations/{{region}}/clusters/{{name}}.
