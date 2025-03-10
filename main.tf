@@ -15,6 +15,13 @@
   */
 
 locals {
+  additional_networks     = flatten([var.additional_networks])
+  enable_private_endpoint = false
+  master_authorized_networks = [{
+    cidr_block   = var.authorized_cidr
+    display_name = "kubectl-access-network"
+  }]
+  enable_gcsfuse_csi   = true
   # This label allows for billing report tracking based on module.
   labels = merge(var.labels, { ghpc_module = "gke-cluster", ghpc_role = "scheduler" })
 }
@@ -33,7 +40,7 @@ locals {
   sa_email         = coalesce(var.service_account_email, local.default_sa_email)
 
   # additional VPCs enable multi networking 
-  derived_enable_multi_networking = coalesce(var.enable_multi_networking, length(var.additional_networks) > 0)
+  derived_enable_multi_networking = coalesce(var.enable_multi_networking, length(local.additional_networks) > 0)
 
   # multi networking needs enabled Dataplane v2
   derived_enable_dataplane_v2 = coalesce(var.enable_dataplane_v2, local.derived_enable_multi_networking)
@@ -65,7 +72,7 @@ resource "google_container_cluster" "gke_cluster" {
   # the master authorized networks even if it's empty.
   master_authorized_networks_config {
     dynamic "cidr_blocks" {
-      for_each = var.master_authorized_networks
+      for_each = local.master_authorized_networks
       content {
         cidr_block   = cidr_blocks.value.cidr_block
         display_name = cidr_blocks.value.display_name
@@ -109,7 +116,7 @@ resource "google_container_cluster" "gke_cluster" {
 
   private_cluster_config {
     enable_private_nodes    = var.enable_private_nodes
-    enable_private_endpoint = var.enable_private_endpoint
+    enable_private_endpoint = local.enable_private_endpoint
     master_ipv4_cidr_block  = var.master_ipv4_cidr_block
     master_global_access_config {
       enabled = var.enable_master_global_access
@@ -160,7 +167,7 @@ resource "google_container_cluster" "gke_cluster" {
       enabled = var.enable_filestore_csi
     }
     gcs_fuse_csi_driver_config {
-      enabled = var.enable_gcsfuse_csi
+      enabled = local.enable_gcsfuse_csi
     }
     gce_persistent_disk_csi_driver_config {
       enabled = var.enable_persistent_disk_csi
@@ -182,7 +189,7 @@ resource "google_container_cluster" "gke_cluster" {
       error_message = "'enable_dataplane_v2' cannot be false when enabling multi networking."
     }
     precondition {
-      condition     = !(!coalesce(var.enable_multi_networking, true) && length(var.additional_networks) > 0)
+      condition     = !(!coalesce(var.enable_multi_networking, true) && length(local.additional_networks) > 0)
       error_message = "'enable_multi_networking' cannot be false when using multivpc module, which passes additional_networks."
     }
   }
@@ -296,7 +303,7 @@ module "workload_identity" {
   name                = "workload-identity-k8-sa"
   gcp_sa_name         = local.sa_email
   project_id          = var.project_id
-  roles               = var.enable_gcsfuse_csi ? ["roles/storage.admin"] : []
+  roles               = local.enable_gcsfuse_csi ? ["roles/storage.admin"] : []
 
   # https://github.com/terraform-google-modules/terraform-google-kubernetes-engine/issues/1059
   depends_on = [
@@ -313,7 +320,7 @@ module "workload_identity" {
 #  project_id = var.project_id
 #
 #  apply_manifests = flatten([
-#    for idx, network_info in var.additional_networks : [
+#    for idx, network_info in local.additional_networks : [
 #      {
 #        source = "${path.module}/templates/gke-network-paramset.yaml.tftpl",
 #        template_vars = {

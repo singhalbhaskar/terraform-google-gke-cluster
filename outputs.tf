@@ -35,10 +35,10 @@ locals {
       One way to access this cluster is from a VM created in the GKE cluster subnet.
     EOT
   )
-  master_authorized_networks_message = length(var.master_authorized_networks) == 0 ? "" : trimspace(
+  master_authorized_networks_message = length(local.master_authorized_networks) == 0 ? "" : trimspace(
     <<-EOT
     The following networks have been authorized to access this cluster:
-    ${join("\n", [for x in var.master_authorized_networks : "  ${x.display_name}: ${x.cidr_block}"])}"
+    ${join("\n", [for x in local.master_authorized_networks : "  ${x.display_name}: ${x.cidr_block}"])}"
     EOT
   )
   public_endpoint_message = trimspace(
@@ -51,7 +51,7 @@ locals {
           --master-authorized-networks <IP Address>/32
     EOT
   )
-  allowlist_your_ip_message = var.enable_private_endpoint ? local.private_endpoint_message : local.public_endpoint_message
+  allowlist_your_ip_message = local.enable_private_endpoint ? local.private_endpoint_message : local.public_endpoint_message
 }
 
 output "instructions" {

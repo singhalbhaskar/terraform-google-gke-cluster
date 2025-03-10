@@ -30,6 +30,12 @@ variable "deployment_name" {
   type        = string
 }
 
+variable "authorized_cidr" {
+  description = "Toolkit deployment variable: authorized_cidr"
+  type        = string
+  default     = "0.0.0.0/0"
+}
+
 variable "prefix_with_deployment_name" {
   description = "If true, cluster name will be prefixed by `deployment_name` (ex: <deployment_name>-<name_suffix>)."
   type        = bool
@@ -115,12 +121,6 @@ variable "enable_filestore_csi" {
   default     = false
 }
 
-variable "enable_gcsfuse_csi" {
-  description = "The status of the GCSFuse Filestore Container Storage Interface (CSI) driver addon, which allows the usage of a gcs bucket as volumes."
-  type        = bool
-  default     = false
-}
-
 variable "enable_persistent_disk_csi" {
   description = "The status of the Google Compute Engine Persistent Disk Container Storage Interface (CSI) driver addon, which allows the usage of a PD as volumes."
   type        = bool
@@ -202,12 +202,6 @@ variable "enable_private_nodes" {
   default     = true
 }
 
-variable "enable_private_endpoint" {
-  description = "(Beta) Whether the master's internal IP address is used as the cluster endpoint."
-  type        = bool
-  default     = true
-}
-
 variable "master_ipv4_cidr_block" {
   description = "(Beta) The IP range in CIDR notation to use for the hosted master network."
   type        = string
@@ -224,15 +218,6 @@ variable "gcp_public_cidrs_access_enabled" {
   description = "Whether the cluster master is accessible via all the Google Compute Engine Public IPs. To view this list of IP addresses look here https://cloud.google.com/compute/docs/faq#find_ip_range"
   type        = bool
   default     = false
-}
-
-variable "master_authorized_networks" {
-  description = "External network that can access Kubernetes master through HTTPS. Must be specified in CIDR notation."
-  type = list(object({
-    cidr_block   = string
-    display_name = string
-  }))
-  default = []
 }
 
 variable "service_account_email" {
