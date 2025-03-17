@@ -24,7 +24,7 @@ spec:
     source:
       repo: https://github.com/singhalbhaskar/terraform-google-gke-cluster.git
       sourceType: git
-    version: 0.0.3
+    version: 0.0.4
     actuationTool:
       flavor: Terraform
       version: ">= 1.3"
@@ -63,6 +63,10 @@ spec:
         description: Name of the HPC deployment. Used in the GKE cluster name by default and can be configured with `prefix_with_deployment_name`.
         varType: string
         required: true
+      - name: authorized_cidr
+        description: "Toolkit deployment variable: authorized_cidr"
+        varType: string
+        defaultValue: 0.0.0.0/0
       - name: prefix_with_deployment_name
         description: "If true, cluster name will be prefixed by `deployment_name` (ex: <deployment_name>-<name_suffix>)."
         varType: bool
@@ -128,10 +132,6 @@ spec:
         description: The status of the Filestore Container Storage Interface (CSI) driver addon, which allows the usage of filestore instance as volumes.
         varType: bool
         defaultValue: false
-      - name: enable_gcsfuse_csi
-        description: The status of the GCSFuse Filestore Container Storage Interface (CSI) driver addon, which allows the usage of a gcs bucket as volumes.
-        varType: bool
-        defaultValue: false
       - name: enable_persistent_disk_csi
         description: The status of the Google Compute Engine Persistent Disk Container Storage Interface (CSI) driver addon, which allows the usage of a PD as volumes.
         varType: bool
@@ -191,10 +191,6 @@ spec:
         description: (Beta) Whether nodes have internal IP addresses only.
         varType: bool
         defaultValue: true
-      - name: enable_private_endpoint
-        description: (Beta) Whether the master's internal IP address is used as the cluster endpoint.
-        varType: bool
-        defaultValue: true
       - name: master_ipv4_cidr_block
         description: (Beta) The IP range in CIDR notation to use for the hosted master network.
         varType: string
@@ -207,14 +203,6 @@ spec:
         description: Whether the cluster master is accessible via all the Google Compute Engine Public IPs. To view this list of IP addresses look here https://cloud.google.com/compute/docs/faq#find_ip_range
         varType: bool
         defaultValue: false
-      - name: master_authorized_networks
-        description: External network that can access Kubernetes master through HTTPS. Must be specified in CIDR notation.
-        varType: |-
-          list(object({
-              cidr_block   = string
-              display_name = string
-            }))
-        defaultValue: []
       - name: service_account_email
         description: Service account e-mail address to use with the system node pool
         varType: string
@@ -288,6 +276,32 @@ spec:
             spec:
               outputExpr: additional_networks
     outputs:
+      - name: additional_networks
+        description: Additional network interface details for GKE, if any. Providing additional networks enables multi networking and creates relevat network objects on the cluster.
+        type:
+          - list
+          - - object
+            - network: string
+              subnetwork: string
+              subnetwork_project: string
+              network_ip: string
+              nic_type: string
+              stack_type: string
+              queue_count: number
+              access_config:
+                - list
+                - - object
+                  - nat_ip: string
+                    network_tier: string
+              ipv6_access_config:
+                - list
+                - - object
+                  - network_tier: string
+              alias_ip_range:
+                - list
+                - - object
+                  - ip_cidr_range: string
+                    subnetwork_range_name: string
       - name: cluster_id
         description: An identifier for the resource with format projects/{{project_id}}/locations/{{region}}/clusters/{{name}}.
         type: string
@@ -319,15 +333,7 @@ spec:
       - storage-api.googleapis.com
       - serviceusage.googleapis.com
     providerVersions:
-      - source: gavinbunney/kubectl
-        version: ">= 1.7.0"
       - source: hashicorp/google
-        version: "> 5.0"
+        version: ">= 5, < 7"
       - source: hashicorp/google-beta
-        version: "> 5.0"
-      - source: hashicorp/http
-        version: ~> 3.0
-      - source: hashicorp/kubernetes
-        version: ~> 2.23
-      - source: hashicorp/null
-        version: ~> 3.0
+        version: ">= 5, < 7"

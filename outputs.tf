@@ -19,6 +19,11 @@ output "cluster_id" {
   value       = google_container_cluster.gke_cluster.id
 }
 
+output "additional_networks" {
+  description = "Additional network interface details for GKE, if any. Providing additional networks enables multi networking and creates relevat network objects on the cluster."
+  value		= var.additional_networks
+}
+
 output "gke_cluster_exists" {
   description = "A static flag that signals to downstream modules that a cluster has been created. Needed by community/modules/scripts/kubernetes-operations."
   value       = true

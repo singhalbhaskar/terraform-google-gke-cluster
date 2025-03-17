@@ -33,6 +33,9 @@ spec:
         authenticator_security_group:
           name: authenticator_security_group
           title: Authenticator Security Group
+        authorized_cidr:
+          name: authorized_cidr
+          title: Authorized Cidr
         autoscaling_profile:
           name: autoscaling_profile
           title: Autoscaling Profile
